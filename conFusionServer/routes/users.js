@@ -7,9 +7,17 @@ var authenticate = require('../authenticate');
 const { token } = require('morgan');
 
 /* GET users listing. */
-router.get('/', function (req, res, next) {
-  res.send('respond with a resource');
-});
+router.route('/')
+  .get(authenticate.verifyUser, authenticate.verifyAdmin, function (req, res, next) {
+    // res.send('respond with a resource');
+    User.find({})
+      .then((user) => {
+        res.statusCode = 200;
+        res.setHeader('Content-Type', 'application/json');
+        res.json(user);
+      }, err => next(err))
+      .catch(err => next(err));
+  });
 
 router.post('/signup', (req, res, next) => {
   User.register(new User({ username: req.body.username }), req.body.password, function (err, user) {
