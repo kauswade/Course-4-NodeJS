@@ -4,11 +4,12 @@ var User = require('../models/user');
 var router = express.Router();
 var passport = require('passport');
 var authenticate = require('../authenticate');
+const cors = require('./cors');
 const { token } = require('morgan');
 
 /* GET users listing. */
 router.route('/')
-  .get(authenticate.verifyUser, authenticate.verifyAdmin, function (req, res, next) {
+  .get(cors.cors, authenticate.verifyUser, authenticate.verifyAdmin, function (req, res, next) {
     // res.send('respond with a resource');
     User.find({})
       .then((user) => {
@@ -19,7 +20,7 @@ router.route('/')
       .catch(err => next(err));
   });
 
-router.post('/signup', (req, res, next) => {
+router.post('/signup', cors.corsWithOptions, (req, res, next) => {
   User.register(new User({ username: req.body.username }), req.body.password, function (err, user) {
     if (err) {
       res.statusCode = 500;
@@ -48,7 +49,7 @@ router.post('/signup', (req, res, next) => {
   });
 });
 
-router.post('/login', passport.authenticate('local'), (req, res) => {
+router.post('/login', cors.corsWithOptions, passport.authenticate('local'), (req, res) => {
   var token = authenticate.getToken({ _id: req.user._id });
   res.statusCode = 200;
   res.setHeader('Content-Type', 'application/json');
